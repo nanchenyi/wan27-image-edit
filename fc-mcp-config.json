@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "wan27-image-edit": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/nanchenyi/wan27-image-edit.git",
+        "wan27-image-edit"
+      ],
+      "env": {
+        "DASHSCOPE_API_KEY": "在此填入你的百炼API Key（sk-...）",
+        "WAN_WORKSPACE_ID": "ws-bw8c2tma2afa2fsl"
+      }
+    }
+  }
+}
