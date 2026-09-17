@@ -92,3 +92,4 @@ git push -u origin main
 - **`current user api does not support synchronous calls`**：本服务走的是异步接口（带 `X-DashScope-Async: enable`），正常不会出现；若自行改造为同步路径需注意。
 - **图像 URL 打不开**：链接仅 24 小时有效，请及时下载保存。
 - **启动报 `No module named 'mcp.server.fastmcp'`**：依赖已锁定 `mcp>=1.2.0,<2`。mcp 2.x 把 `FastMCP` 改名为 `MCPServer`，不要放开这个上限。
+- **`'latin-1' codec can't encode characters`**：这是请求头编码错误，与图像 URL / prompt 内容无关。根因是 `DASHSCOPE_API_KEY`（或 `WAN_WORKSPACE_ID`）里混入了非 ASCII 字符——从网页复制 Key 时常带入全角字符、智能引号、零宽空格或结尾空格。服务现已在调用前校验并直接报出「哪个字符、在什么位置」。请重新从百炼控制台复制 Key，确认输入法处于半角、粘贴后首尾无空格。图像 URL 中的中文路径、`Signature=`、`%3D` 等都在 JSON body 里，不会触发该错误。
