@@ -29,14 +29,34 @@ POLL_TIMEOUT_SEC = 300
 
 
 def _base_url() -> str:
-    ws = os.getenv("WAN_WORKSPACE_ID", DEFAULT_WORKSPACE_ID)
+    ws = os.getenv("WAN_WORKSPACE_ID", DEFAULT_WORKSPACE_ID).strip()
+    bad = [(i, c) for i, c in enumerate(ws) if ord(c) > 255]
+    if bad:
+        where = "、".join(f"位置{i}的「{c}」" for i, c in bad[:5])
+        raise RuntimeError(
+            f"WAN_WORKSPACE_ID 含有非 ASCII 字符（{where} 等），请检查配置。"
+        )
     return f"https://{ws}.{REGION_HOST}.maas.aliyuncs.com/api/v1"
 
 
 def _api_key() -> str:
-    key = os.getenv("DASHSCOPE_API_KEY", "").strip()
+    key = os.getenv("DASHSCOPE_API_KEY", "")
     if not key:
         raise RuntimeError("环境变量 DASHSCOPE_API_KEY 未设置")
+    # 复制粘贴常带入首尾换行/空格，先去除
+    key = key.strip()
+    # HTTP 请求头只允许 latin-1 字符。Key 一旦混入全角字符、中文、智能引号、
+    # 零宽空格等非 ASCII 字符，urllib3 会抛 'latin-1' codec can't encode 这类
+    # 晦涩异常。这里提前给出可读报错，直接指出是哪个字符、在什么位置。
+    bad = [(i, c) for i, c in enumerate(key) if ord(c) > 255]
+    if bad:
+        where = "、".join(f"位置{i}的「{c}」" for i, c in bad[:5])
+        more = " 等" if len(bad) > 5 else ""
+        raise RuntimeError(
+            f"DASHSCOPE_API_KEY 含有非 ASCII 字符（{where}{more}），"
+            f"HTTP 请求头无法编码。请重新从百炼控制台复制 Key，"
+            f"注意不要用全角字符、智能引号或结尾空格。"
+        )
     return key
 
 
