@@ -10,6 +10,7 @@
 """
 
 import os
+import re
 import time
 
 import requests
@@ -82,7 +83,7 @@ def wan27_image_edit(
               data:image/{jpeg|png|webp};base64,<...> 字符串。图像格式 JPEG/JPG/PNG(无透明)/BMP/WEBP，
               宽高 [240,8000]px、宽高比 [1:8,8:1]、单张 ≤20MB。
       model: wan2.7-image-pro（专业版）或 wan2.7-image（更快）。
-      size: 输出分辨率规格，1K / 2K / 4K。图像编辑场景 pro 与 image 最高均 2K；4K 仅文生图可用。
+      size: 输出分辨率，1K / 2K / 4K 档位，或 宽*高 像素（如 1080*1920）。图像编辑场景 pro 与 image 最高均 2K；4K 仅文生图可用。
       n: 生成张数，1-4。
       watermark: 是否在右下角加“AI生成”水印，默认 False。
       seed: 随机种子 [0,2147483647]，相同 seed 结果相对稳定（可选）。
@@ -93,8 +94,8 @@ def wan27_image_edit(
         raise ValueError(f"model 只能是 {' 或 '.join(VALID_MODELS)}")
     if not isinstance(images, list) or not (1 <= len(images) <= 9):
         raise ValueError("images 必须是 1-9 张图片的数组")
-    if size not in VALID_SIZES:
-        raise ValueError(f"size 只能是 {' / '.join(VALID_SIZES)}")
+    if size not in VALID_SIZES and not re.fullmatch(r"\d+\*\d+|\d+x\d+", size):
+        raise ValueError(f"size 只能是 {' / '.join(VALID_SIZES)} 档位或 宽*高 像素（如 1080*1920）")
     if not (1 <= int(n) <= 4):
         raise ValueError("n 取值范围 1-4")
     if not prompt or not prompt.strip():
